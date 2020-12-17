@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"strconv"
 )
 
 func main() {
-	earliest, ids, err := readInput("small.txt")
+	earliest, ids, err := readInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	part1 := findFirst(earliest, ids)
-	// part2 := findSecond(ids)
-	part2 := findThird(ids)
+	part2 := findSecond(ids)
 
 	fmt.Printf("Part 1: %d\n", part1)
 	fmt.Printf("Part 2: %d\n", part2)
@@ -35,8 +35,8 @@ func findFirst(earliest int, ids []int) int {
 			}
 		}
 	}
-	minTime := 999999999
-	minID := 999999999
+	minTime := math.MaxInt64
+	minID := math.MaxInt64
 	for i, t := range times {
 		if t == 0 {
 			continue
@@ -49,48 +49,22 @@ func findFirst(earliest int, ids []int) int {
 	return minID * (minTime - earliest)
 }
 
-type target struct {
-	id  int
-	rem int
-}
-
 func findSecond(ids []int) int {
-	var targets []target
-	for i, id := range ids {
-		if i == 0 || id == 0 {
-			continue
-		}
-		targets = append(targets, target{id: id, rem: id - i})
-	}
-outer:
-	// for i := 0; ; i += ids[0] {
-	for i := 100000000000000; ; i += ids[0] {
-		if i == 1068781 {
-			fmt.Println(i)
-		}
-		for _, tar := range targets {
-			if i%tar.id != tar.rem {
-				continue outer
-			}
-		}
-		return i
-	}
-}
-
-func findThird(ids []int) int {
-	var targets []target
-	for i, id := range ids {
+	sofar := ids[0]
+	var t int
+	for i := 1; i < len(ids); i++ {
+		id := ids[i]
 		if id == 0 {
 			continue
 		}
-		if i == 0 {
-			targets = append(targets, target{id: id, rem: 0})
-		} else {
-			targets = append(targets, target{id: id, rem: id - i})
+		for ; ; t += sofar {
+			if (t+i)%id == 0 {
+				sofar *= id
+				break
+			}
 		}
 	}
-	fmt.Println(targets)
-	return 0
+	return t
 }
 
 func readInput(filename string) (int, []int, error) {
